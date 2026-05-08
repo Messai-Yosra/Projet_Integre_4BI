@@ -1,0 +1,83 @@
+<!-- Loading -->
+<div class="loading-screen" *ngIf="loading">
+  <div class="spinner"></div>
+</div>
+
+<div class="dashboard-view" *ngIf="!loading && dashboard">
+
+  <!-- Header -->
+  <div class="db-header">
+    <div class="db-header-left">
+      <button class="back-btn" (click)="goBack()">
+        <span class="material-icons">arrow_back</span>
+      </button>
+      <div class="db-icon" [style.background]="meta.gradient">
+        <span class="material-icons">{{ dashboard?.icon || meta.icon }}</span>
+      </div>
+      <div class="db-title">
+        <h1>{{ dashboard?.name }}</h1>
+        <p>{{ dashboard?.description }}</p>
+      </div>
+    </div>
+    <div class="db-header-right">
+      <div class="status-badge" [class.ready]="isEmbedReady" [class.pending]="!isEmbedReady">
+        <span class="dot"></span>
+        {{ isEmbedReady ? 'Live' : 'En attente' }}
+      </div>
+    </div>
+  </div>
+
+  <!-- Power BI embed (when URL is configured) -->
+  <div class="powerbi-wrapper" *ngIf="isEmbedReady">
+    <iframe
+      [src]="safeEmbedUrl"
+      frameborder="0"
+      allowfullscreen="true"
+      class="powerbi-iframe">
+    </iframe>
+  </div>
+
+  <!-- Placeholder (when URL is not yet configured) -->
+  <div class="placeholder-wrapper" *ngIf="!isEmbedReady">
+    <div class="placeholder-card">
+      <div class="pbi-logo" [style.background]="meta.gradient">
+        <span class="material-icons">analytics</span>
+      </div>
+
+      <h2>Power BI Dashboard</h2>
+      <p class="placeholder-subtitle">
+        Le rapport <strong>{{ dashboard?.name }}</strong> sera affiché ici une fois l'URL d'intégration configurée.
+      </p>
+
+      <div class="steps">
+        <div class="step">
+          <div class="step-num" [style.background]="meta.gradient">1</div>
+          <div class="step-text">
+            <strong>Publier le rapport</strong>
+            <span>Publiez votre rapport sur Microsoft Fabric / Power BI Service</span>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num" [style.background]="meta.gradient">2</div>
+          <div class="step-text">
+            <strong>Copier l'URL embed</strong>
+            <span>File → Embed report → Website or portal → copier le lien</span>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num" [style.background]="meta.gradient">3</div>
+          <div class="step-text">
+            <strong>Coller dans le code</strong>
+            <span>Ouvrir <code>dashboard-view.component.ts</code> et coller l'URL dans <code>POWERBI_EMBED_URLS['{{ slug }}']</code></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="code-hint">
+        <span class="material-icons">code</span>
+        <code>POWERBI_EMBED_URLS['{{ slug }}'] = 'https://app.powerbi.com/reportEmbed?...'</code>
+      </div>
+    </div>
+  </div>
+
+</div>

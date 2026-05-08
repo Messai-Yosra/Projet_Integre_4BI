@@ -1,0 +1,208 @@
+<div class="home-container">
+
+  <!-- ── Hero ── -->
+  <div class="hero-section">
+    <div class="hero-content">
+      <div class="greeting-badge">
+        <span class="material-icons">waving_hand</span>
+        {{ getGreeting() }}, {{ getDisplayName() }}
+      </div>
+      <h1 class="hero-title">
+        Your Padel<br>
+        <span class="highlight">Intelligence Hub</span>
+      </h1>
+      <p class="hero-subtitle">
+        Make faster, smarter decisions with real-time performance data,
+        sponsorship insights, and sustainability metrics — all in one place.
+      </p>
+      <div class="hero-cta">
+        <a class="btn-hero-primary" [routerLink]="['/dashboard', dashboards[0]?.slug || 'overview']" *ngIf="dashboards.length > 0">
+          <span class="material-icons">rocket_launch</span>
+          Open My Dashboard
+        </a>
+        <div class="hero-trust">
+          <span class="material-icons">verified</span>
+          Secured · Role-based access · Live data
+        </div>
+      </div>
+    </div>
+
+    <div class="hero-visual">
+      <div class="visual-ring ring-1"></div>
+      <div class="visual-ring ring-2"></div>
+      <div class="visual-ring ring-3"></div>
+      <div class="visual-center">
+        <span class="material-icons">sports_tennis</span>
+      </div>
+      <div class="metric-bubble bubble-1">
+        <span class="material-icons">trending_up</span>
+        <div>
+          <div class="bubble-value">+24%</div>
+          <div class="bubble-label">Revenue Growth</div>
+        </div>
+      </div>
+      <div class="metric-bubble bubble-2">
+        <span class="material-icons">groups</span>
+        <div>
+          <div class="bubble-value">12K+</div>
+          <div class="bubble-label">Players Tracked</div>
+        </div>
+      </div>
+      <div class="metric-bubble bubble-3">
+        <span class="material-icons">emoji_events</span>
+        <div>
+          <div class="bubble-value">{{ dashboards.length }}</div>
+          <div class="bubble-label">Reports Available</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── KPI Strip ── -->
+  <div class="kpi-strip">
+    <div class="kpi-item">
+      <span class="material-icons">dashboard</span>
+      <div>
+        <div class="kpi-value">{{ dashboards.length }}</div>
+        <div class="kpi-label">Reports Assigned</div>
+      </div>
+    </div>
+    <div class="kpi-divider"></div>
+    <div class="kpi-item">
+      <span class="material-icons">badge</span>
+      <div>
+        <div class="kpi-value role-text">{{ currentUser?.role?.name || '—' }}</div>
+        <div class="kpi-label">Your Access Level</div>
+      </div>
+    </div>
+    <div class="kpi-divider"></div>
+    <div class="kpi-item">
+      <span class="material-icons">bolt</span>
+      <div>
+        <div class="kpi-value">Live</div>
+        <div class="kpi-label">Data Refresh</div>
+      </div>
+    </div>
+    <div class="kpi-divider"></div>
+    <div class="kpi-item">
+      <span class="material-icons">public</span>
+      <div>
+        <div class="kpi-value">FIP</div>
+        <div class="kpi-label">Global Platform</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── My Reports ── -->
+  <div class="section-header">
+    <div class="section-label">
+      <span class="material-icons">bar_chart</span>
+      My Reports
+    </div>
+    <h2>Your Business Intelligence Reports</h2>
+    <p>Each report is tailored to your role and gives you the insights you need to act with confidence.</p>
+  </div>
+
+  <div class="loading-state" *ngIf="loading">
+    <div class="spinner"></div>
+    <p>Loading your reports...</p>
+  </div>
+
+  <div class="dashboard-grid" *ngIf="!loading && dashboards.length > 0">
+    <div
+      *ngFor="let dashboard of dashboards; let i = index"
+      class="dashboard-card"
+      [routerLink]="['/dashboard', dashboard.slug]"
+      [style.animation-delay.ms]="i * 80"
+    >
+      <div class="card-top">
+        <div class="card-icon" [class]="'gradient-' + (i % 5 + 1)">
+          <span class="material-icons">{{ getDashboardIcon(dashboard.slug) }}</span>
+        </div>
+        <span class="card-badge">Power BI</span>
+      </div>
+      <div class="card-body">
+        <h3>{{ dashboard.name }}</h3>
+        <p>{{ getDashboardDesc(dashboard.slug) }}</p>
+      </div>
+      <div class="card-footer">
+        <div class="card-tags">
+          <span class="tag" *ngFor="let tag of getDashboardTags(dashboard.slug)">{{ tag }}</span>
+        </div>
+        <span class="card-link">
+          Open Report
+          <span class="material-icons">arrow_forward</span>
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <div class="empty-state" *ngIf="!loading && dashboards.length === 0">
+    <div class="empty-icon">
+      <span class="material-icons">lock</span>
+    </div>
+    <h3>No Reports Assigned Yet</h3>
+    <p>Your administrator will grant you access to the relevant business reports for your role.</p>
+  </div>
+
+  <!-- ── Why This Platform ── -->
+  <div class="why-section">
+    <div class="section-label">
+      <span class="material-icons">lightbulb</span>
+      Why This Platform
+    </div>
+    <h2>Built for Padel Decision-Makers</h2>
+
+    <div class="why-grid">
+      <div class="why-card">
+        <div class="why-icon gradient-1">
+          <span class="material-icons">speed</span>
+        </div>
+        <h3>Faster Decisions</h3>
+        <p>Stop waiting for weekly reports. Access live performance data the moment you need it to act.</p>
+      </div>
+      <div class="why-card">
+        <div class="why-icon gradient-2">
+          <span class="material-icons">visibility</span>
+        </div>
+        <h3>Full Visibility</h3>
+        <p>From tournament operations to sponsorship ROI — every key metric in a single, unified view.</p>
+      </div>
+      <div class="why-card">
+        <div class="why-icon gradient-3">
+          <span class="material-icons">admin_panel_settings</span>
+        </div>
+        <h3>Right Information, Right People</h3>
+        <p>Each role sees only what matters to them. No noise, no overload — just relevant insights.</p>
+      </div>
+      <div class="why-card">
+        <div class="why-icon gradient-4">
+          <span class="material-icons">eco</span>
+        </div>
+        <h3>Sustainability Tracking</h3>
+        <p>Monitor your SDG commitments and demonstrate social impact to partners and stakeholders.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Quick Access ── -->
+  <div class="quick-access" *ngIf="dashboards.length > 0">
+    <div class="section-label">
+      <span class="material-icons">flash_on</span>
+      Quick Access
+    </div>
+    <div class="quick-links">
+      <a
+        *ngFor="let dashboard of dashboards; let i = index"
+        [routerLink]="['/dashboard', dashboard.slug]"
+        class="quick-link"
+        [class]="'ql-' + (i % 5 + 1)"
+      >
+        <span class="material-icons">{{ getDashboardIcon(dashboard.slug) }}</span>
+        <span>{{ dashboard.name }}</span>
+        <span class="material-icons arrow">east</span>
+      </a>
+    </div>
+  </div>
+
+</div>

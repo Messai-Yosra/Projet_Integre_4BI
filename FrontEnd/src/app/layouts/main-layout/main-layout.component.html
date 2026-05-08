@@ -1,0 +1,143 @@
+<div class="main-layout" [class.sidebar-closed]="!sidebarOpen">
+  <!-- Sidebar -->
+  <aside class="sidebar" [class.open]="sidebarOpen">
+    <div class="sidebar-header">
+      <div class="logo">
+        <span class="material-icons">sports_tennis</span>
+        <span class="logo-text" *ngIf="sidebarOpen">Padel Platform</span>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a routerLink="/home" routerLinkActive="active" class="nav-item">
+        <span class="material-icons">home</span>
+        <span class="nav-text" *ngIf="sidebarOpen">{{ 'nav.home' | translate }}</span>
+      </a>
+
+      <div class="nav-section" *ngIf="dashboards.length > 0">
+        <div class="nav-item nav-dropdown" (click)="toggleDashboardsDropdown()">
+          <span class="material-icons">dashboard</span>
+          <span class="nav-text" *ngIf="sidebarOpen">{{ 'nav.dashboards' | translate }}</span>
+          <span class="material-icons dropdown-arrow" *ngIf="sidebarOpen">
+            {{ showDashboardsDropdown ? 'expand_less' : 'expand_more' }}
+          </span>
+        </div>
+        
+        <div class="nav-dropdown-content" *ngIf="showDashboardsDropdown && sidebarOpen">
+          <a
+            *ngFor="let dashboard of dashboards"
+            [routerLink]="['/dashboard', dashboard.slug]"
+            routerLinkActive="active"
+            class="nav-item nav-sub-item"
+          >
+            <span class="material-icons">{{ dashboard.icon || 'analytics' }}</span>
+            <span class="nav-text">{{ dashboard.name }}</span>
+          </a>
+        </div>
+      </div>
+    </nav>
+  </aside>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <!-- Navbar -->
+    <header class="navbar">
+      <div class="navbar-left">
+        <button class="icon-btn" (click)="toggleSidebar()">
+          <span class="material-icons">menu</span>
+        </button>
+      </div>
+
+      <div class="navbar-right">
+        <!-- Language Switcher -->
+        <div class="language-switcher">
+          <button
+            class="lang-btn"
+            [class.active]="currentLang === 'en'"
+            (click)="switchLanguage('en')"
+          >
+            EN
+          </button>
+          <button
+            class="lang-btn"
+            [class.active]="currentLang === 'fr'"
+            (click)="switchLanguage('fr')"
+          >
+            FR
+          </button>
+        </div>
+
+        <!-- Dark Mode Toggle -->
+        <button class="icon-btn" (click)="toggleDarkMode()">
+          <span class="material-icons">{{ darkMode ? 'light_mode' : 'dark_mode' }}</span>
+        </button>
+
+        <!-- Notifications -->
+        <div class="dropdown">
+          <button class="icon-btn" (click)="toggleNotifications()">
+            <span class="material-icons">notifications</span>
+            <span class="badge">3</span>
+          </button>
+          <div class="dropdown-menu" *ngIf="showNotifications">
+            <div class="dropdown-header">{{ 'nav.notifications' | translate }}</div>
+            <div class="notification-item">
+              <span class="material-icons">info</span>
+              <div class="notification-content">
+                <p>New dashboard available</p>
+                <span class="time">2 hours ago</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- User Menu -->
+        <div class="dropdown">
+          <button class="user-btn" (click)="toggleUserMenu()">
+            <div class="user-avatar">
+              {{ getUserInitials() }}
+            </div>
+            <span class="user-name" *ngIf="currentUser">
+              {{ getUserDisplayName() }}
+            </span>
+            <span class="material-icons">expand_more</span>
+          </button>
+          <div class="dropdown-menu" *ngIf="showUserMenu">
+            <div class="dropdown-header">
+              <div class="user-info">
+                <div class="user-avatar-large">
+                  {{ getUserInitials() }}
+                </div>
+                <div class="user-details">
+                  <div class="user-name-large">{{ getUserDisplayName() }}</div>
+                  <div class="user-email">{{ currentUser?.email }}</div>
+                  <div class="user-role">{{ currentUser?.role?.name }}</div>
+                </div>
+              </div>
+            </div>
+            <div class="dropdown-divider"></div>
+            <a routerLink="/profile" class="dropdown-item" (click)="showUserMenu = false">
+              <span class="material-icons">account_circle</span>
+              {{ 'nav.profile' | translate }}
+            </a>
+            <a routerLink="/users" class="dropdown-item" (click)="showUserMenu = false" *ngIf="currentUser?.role?.name === 'Admin'">
+              <span class="material-icons">people</span>
+              {{ 'nav.users' | translate }}
+            </a>
+            <div class="dropdown-divider"></div>
+            <button class="dropdown-item logout-item" (click)="logout()">
+              <span class="material-icons">logout</span>
+              {{ 'nav.logout' | translate }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Page Content -->
+    <main class="page-content">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+</div>
+
+<app-toast></app-toast>

@@ -1,0 +1,5 @@
+admin / admin123 (Admin - tous les dashboards)
+director / director123 (Direction Générale FIP - Overview)
+competitions / comp123 (FIP Competitions Director - Operational)
+marketing / market123 (Brand Head - Equipment)
+commercial / comm123 (Tournament Commercial - Sponsorship + SDG)
