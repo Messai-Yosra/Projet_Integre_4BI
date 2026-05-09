@@ -1,0 +1,36 @@
+<div class="modal-overlay" (click)="cancel()">
+  <div class="modal-box" (click)="$event.stopPropagation()">
+    <div class="modal-icon">
+      <span class="material-icons">admin_panel_settings</span>
+    </div>
+    <h2>{{ 'admin.confirm_title' | translate }}</h2>
+    <p>{{ 'admin.confirm_desc' | translate }}</p>
+
+    <div class="form-group">
+      <label>{{ 'profile.current_password' | translate }}</label>
+      <div class="pw-wrap">
+        <input [type]="showPassword ? 'text' : 'password'"
+               [(ngModel)]="password"
+               class="form-control"
+               [placeholder]="'auth.password_placeholder' | translate"
+               (keyup.enter)="submit()" />
+        <button type="button" class="pw-toggle" (click)="showPassword = !showPassword">
+          <span class="material-icons">{{ showPassword ? 'visibility_off' : 'visibility' }}</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="error-msg" *ngIf="error">{{ error }}</div>
+
+    <div class="modal-actions">
+      <button class="btn-secondary" (click)="cancel()">
+        {{ 'common.cancel' | translate }}
+      </button>
+      <button class="btn-primary" (click)="submit()" [disabled]="loading || !password">
+        <span class="material-icons" *ngIf="!loading">lock_open</span>
+        <span *ngIf="!loading">{{ 'admin.unlock' | translate }}</span>
+        <span *ngIf="loading">{{ 'common.verifying' | translate }}</span>
+      </button>
+    </div>
+  </div>
+</div>

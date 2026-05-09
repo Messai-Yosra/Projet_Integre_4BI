@@ -16,7 +16,7 @@
         sponsorship insights, and sustainability metrics — all in one place.
       </p>
       <div class="hero-cta">
-        <a class="btn-hero-primary" [routerLink]="['/dashboard', dashboards[0]?.slug || 'overview']" *ngIf="dashboards.length > 0">
+        <a class="btn-hero-primary" [routerLink]="['/dashboard', dashboards[0].slug]" *ngIf="dashboards.length > 0">
           <span class="material-icons">rocket_launch</span>
           Open My Dashboard
         </a>
@@ -181,6 +181,81 @@
         </div>
         <h3>Sustainability Tracking</h3>
         <p>Monitor your SDG commitments and demonstrate social impact to partners and stakeholders.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── ML Predictions (placeholder) ── -->
+  <div class="ml-section">
+    <div class="ml-section-header">
+      <div class="section-label">
+        <span class="material-icons">psychology</span>
+        {{ 'home.ml_label' | translate }}
+      </div>
+      <span class="coming-soon-badge">
+        <span class="material-icons">schedule</span>
+        {{ 'home.coming_soon' | translate }}
+      </span>
+    </div>
+    <h2>{{ 'home.ml_title' | translate }}</h2>
+    <p class="ml-subtitle">{{ 'home.ml_subtitle' | translate }}</p>
+
+    <div class="ml-grid">
+      <div class="ml-card">
+        <div class="ml-card-top">
+          <div class="ml-icon g1"><span class="material-icons">sports_tennis</span></div>
+          <span class="ml-badge">{{ 'home.ml_classification' | translate }}</span>
+        </div>
+        <h3>{{ 'home.ml_perf_title' | translate }}</h3>
+        <p>{{ 'home.ml_perf_desc' | translate }}</p>
+        <div class="ml-bar-group">
+          <div class="ml-bar-row">
+            <span>Win Rate</span>
+            <div class="ml-track"><div class="ml-fill" style="width:72%"></div></div>
+            <span class="ml-pct">72%</span>
+          </div>
+          <div class="ml-bar-row">
+            <span>Form Index</span>
+            <div class="ml-track"><div class="ml-fill g2" style="width:58%"></div></div>
+            <span class="ml-pct">58%</span>
+          </div>
+        </div>
+        <div class="ml-footer-tag">{{ 'home.ml_placeholder_tag' | translate }}</div>
+      </div>
+
+      <div class="ml-card">
+        <div class="ml-card-top">
+          <div class="ml-icon g2"><span class="material-icons">trending_up</span></div>
+          <span class="ml-badge">{{ 'home.ml_regression' | translate }}</span>
+        </div>
+        <h3>{{ 'home.ml_revenue_title' | translate }}</h3>
+        <p>{{ 'home.ml_revenue_desc' | translate }}</p>
+        <div class="ml-chart-placeholder">
+          <div class="ml-bar-mini" style="height:40%"></div>
+          <div class="ml-bar-mini" style="height:65%"></div>
+          <div class="ml-bar-mini" style="height:50%"></div>
+          <div class="ml-bar-mini" style="height:80%"></div>
+          <div class="ml-bar-mini active" style="height:90%"></div>
+          <div class="ml-bar-mini dashed" style="height:95%"></div>
+          <div class="ml-bar-mini dashed" style="height:88%"></div>
+        </div>
+        <div class="ml-footer-tag">{{ 'home.ml_placeholder_tag' | translate }}</div>
+      </div>
+
+      <div class="ml-card">
+        <div class="ml-card-top">
+          <div class="ml-icon g3"><span class="material-icons">emoji_events</span></div>
+          <span class="ml-badge">{{ 'home.ml_clustering' | translate }}</span>
+        </div>
+        <h3>{{ 'home.ml_segment_title' | translate }}</h3>
+        <p>{{ 'home.ml_segment_desc' | translate }}</p>
+        <div class="ml-segments">
+          <div class="ml-segment" style="--c:#667eea;--w:35%">Elite <span>35%</span></div>
+          <div class="ml-segment" style="--c:#f093fb;--w:28%">Amateur <span>28%</span></div>
+          <div class="ml-segment" style="--c:#4facfe;--w:22%">Junior <span>22%</span></div>
+          <div class="ml-segment" style="--c:#43e97b;--w:15%">Other <span>15%</span></div>
+        </div>
+        <div class="ml-footer-tag">{{ 'home.ml_placeholder_tag' | translate }}</div>
       </div>
     </div>
   </div>

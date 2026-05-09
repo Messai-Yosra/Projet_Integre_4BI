@@ -1,208 +1,252 @@
-<div class="profile-container">
-  <div class="profile-header">
-    <div class="profile-banner"></div>
-    <div class="profile-info">
-      <div class="profile-avatar-large">
-        {{ getUserInitials() }}
-      </div>
-      <div class="profile-details">
-        <h1>{{ getUserDisplayName() }}</h1>
-        <p class="profile-username">{{ '@' + (currentUser?.username || '') }}</p>
-        <div class="profile-role">
-          <span class="material-icons">badge</span>
-          {{ currentUser?.role?.name }}
+<div class="profile-page" *ngIf="currentUser">
+
+  <!-- ── Hero banner ────────────────────────────────────────────────────── -->
+  <div class="profile-hero">
+    <div class="hero-gradient"></div>
+    <div class="hero-content">
+
+      <!-- Avatar with photo-upload overlay -->
+      <label class="avatar-wrap" [class.uploading]="uploadingPhoto">
+        <img *ngIf="photoPreview || getPhotoUrl()" [src]="photoPreview || getPhotoUrl()!" class="avatar-img" alt="avatar" />
+        <div *ngIf="!photoPreview && !getPhotoUrl()" class="avatar-initials">{{ getInitials() }}</div>
+        <div class="avatar-overlay">
+          <span class="material-icons">{{ uploadingPhoto ? 'hourglass_empty' : 'photo_camera' }}</span>
         </div>
+        <input type="file" accept="image/*" (change)="onPhotoSelected($event)" hidden [disabled]="uploadingPhoto" />
+      </label>
+
+      <div class="hero-info">
+        <h1>{{ getDisplayName() }}</h1>
+        <p class="hero-username">&#64;{{ currentUser.username }}</p>
+        <span class="hero-role-badge">
+          <span class="material-icons">badge</span>
+          {{ currentUser.role ? currentUser.role.name : '' }}
+        </span>
       </div>
     </div>
   </div>
 
-  <div class="profile-content">
-    <!-- Profile Information Card -->
-    <div class="profile-card">
-      <div class="card-header">
-        <div>
-          <h2>{{ 'profile.personal_info' | translate }}</h2>
-          <p>{{ 'profile.personal_info_desc' | translate }}</p>
-        </div>
-        <button class="btn-secondary" (click)="toggleEditMode()" *ngIf="!editMode">
-          <span class="material-icons">edit</span>
-          {{ 'profile.edit' | translate }}
-        </button>
-      </div>
-      <div class="card-body">
-        <form *ngIf="editMode" (ngSubmit)="saveProfile()">
-          <div class="form-row">
-            <div class="form-group">
-              <label>{{ 'profile.username' | translate }} <span class="field-note">(cannot be changed)</span></label>
-              <input type="text" [(ngModel)]="profileForm.username" name="username" readonly class="readonly-field" />
-            </div>
-            <div class="form-group">
-              <label>{{ 'profile.email' | translate }}</label>
-              <input type="email" [(ngModel)]="profileForm.email" name="email" required />
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label>{{ 'profile.first_name' | translate }}</label>
-              <input type="text" [(ngModel)]="profileForm.first_name" name="first_name" />
-            </div>
-            <div class="form-group">
-              <label>{{ 'profile.last_name' | translate }}</label>
-              <input type="text" [(ngModel)]="profileForm.last_name" name="last_name" />
-            </div>
-          </div>
-          <div class="form-actions">
-            <button type="button" class="btn-secondary" (click)="toggleEditMode()" [disabled]="saving">
-              {{ 'profile.cancel' | translate }}
-            </button>
-            <button type="submit" class="btn-primary" [disabled]="saving">
-              <span class="material-icons">{{ saving ? 'hourglass_empty' : 'save' }}</span>
-              {{ saving ? 'Saving...' : ('profile.save' | translate) }}
-            </button>
-          </div>
-        </form>
+  <!-- ── Main grid ──────────────────────────────────────────────────────── -->
+  <div class="profile-grid">
 
-        <div *ngIf="!editMode" class="info-grid">
-          <div class="info-item">
+    <!-- LEFT COLUMN -->
+    <div class="profile-col">
+
+      <!-- Personal Info card -->
+      <div class="pcard">
+        <div class="pcard-header">
+          <div class="pcard-title">
             <span class="material-icons">person</span>
             <div>
-              <label>{{ 'profile.username' | translate }}</label>
-              <p>{{ currentUser?.username }}</p>
+              <h2>{{ 'profile.personal_info' | translate }}</h2>
+              <p>{{ 'profile.personal_info_desc' | translate }}</p>
             </div>
           </div>
-          <div class="info-item">
-            <span class="material-icons">email</span>
-            <div>
-              <label>{{ 'profile.email' | translate }}</label>
-              <p>{{ currentUser?.email }}</p>
-            </div>
-          </div>
-          <div class="info-item">
-            <span class="material-icons">badge</span>
-            <div>
-              <label>{{ 'profile.first_name' | translate }}</label>
-              <p>{{ currentUser?.first_name || '-' }}</p>
-            </div>
-          </div>
-          <div class="info-item">
-            <span class="material-icons">badge</span>
-            <div>
-              <label>{{ 'profile.last_name' | translate }}</label>
-              <p>{{ currentUser?.last_name || '-' }}</p>
-            </div>
-          </div>
+          <button class="ghost-btn" (click)="openEdit()" *ngIf="!editMode">
+            <span class="material-icons">edit</span>
+          </button>
         </div>
-      </div>
-    </div>
 
-    <!-- Security Card -->
-    <div class="profile-card">
-      <div class="card-header">
-        <div>
-          <h2>{{ 'profile.security' | translate }}</h2>
-          <p>{{ 'profile.security_desc' | translate }}</p>
+        <!-- View mode -->
+        <div class="pcard-body info-grid" *ngIf="!editMode">
+          <div class="info-row">
+            <span class="info-label">{{ 'profile.username' | translate }}</span>
+            <span class="info-value">&#64;{{ currentUser.username }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">{{ 'profile.email' | translate }}</span>
+            <span class="info-value">{{ currentUser.email }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">{{ 'profile.first_name' | translate }}</span>
+            <span class="info-value">{{ currentUser.first_name || '—' }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">{{ 'profile.last_name' | translate }}</span>
+            <span class="info-value">{{ currentUser.last_name || '—' }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">{{ 'profile.role' | translate }}</span>
+            <span class="info-value role-chip">{{ currentUser.role ? currentUser.role.name : '—' }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">{{ 'profile.member_since' | translate }}</span>
+            <span class="info-value">{{ currentUser.created_at | date:'mediumDate' }}</span>
+          </div>
         </div>
-        <button class="btn-secondary" (click)="toggleChangePassword()" *ngIf="!changePasswordMode">
-          <span class="material-icons">lock</span>
-          {{ 'profile.change_password' | translate }}
-        </button>
+
+        <!-- Edit mode -->
+        <div class="pcard-body" *ngIf="editMode">
+          <div class="form-group">
+            <label>{{ 'profile.first_name' | translate }}</label>
+            <input type="text" class="form-control" [(ngModel)]="profileForm.first_name" />
+          </div>
+          <div class="form-group">
+            <label>{{ 'profile.last_name' | translate }}</label>
+            <input type="text" class="form-control" [(ngModel)]="profileForm.last_name" />
+          </div>
+          <div class="form-actions">
+            <button class="btn-ghost" (click)="cancelEdit()">{{ 'common.cancel' | translate }}</button>
+            <button class="btn-primary" (click)="saveProfile()" [disabled]="saving">
+              <span class="material-icons">{{ saving ? 'hourglass_empty' : 'save' }}</span>
+              {{ 'common.save' | translate }}
+            </button>
+          </div>
+        </div>
       </div>
-      <div class="card-body">
-        <form *ngIf="changePasswordMode" (ngSubmit)="changePassword()">
-          <div class="password-error" *ngIf="passwordError">
+
+      <!-- Accessible Dashboards card -->
+      <div class="pcard">
+        <div class="pcard-header">
+          <div class="pcard-title">
+            <span class="material-icons">dashboard</span>
+            <div>
+              <h2>{{ 'profile.my_dashboards' | translate }}</h2>
+              <p>{{ 'profile.my_dashboards_desc' | translate }}</p>
+            </div>
+          </div>
+        </div>
+        <div class="pcard-body">
+          <div *ngIf="accessibleDashboards.length === 0" class="empty-dash">
+            <span class="material-icons">lock</span>
+            <p>{{ 'profile.no_dashboards' | translate }}</p>
+          </div>
+          <div class="dash-list" *ngIf="accessibleDashboards.length > 0">
+            <a *ngFor="let d of accessibleDashboards"
+               [routerLink]="['/dashboard', d.slug]"
+               class="dash-item">
+              <span class="material-icons dash-icon">{{ d.icon || 'analytics' }}</span>
+              <span class="dash-name">{{ d.name }}</span>
+              <span class="material-icons arrow-icon">chevron_right</span>
+            </a>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /LEFT COLUMN -->
+
+    <!-- RIGHT COLUMN -->
+    <div class="profile-col">
+
+      <!-- Password Change card -->
+      <div class="pcard">
+        <div class="pcard-header">
+          <div class="pcard-title">
+            <span class="material-icons">lock</span>
+            <div>
+              <h2>{{ 'profile.security' | translate }}</h2>
+              <p>{{ 'profile.security_desc' | translate }}</p>
+            </div>
+          </div>
+          <button class="ghost-btn" (click)="showPasswordPanel = !showPasswordPanel">
+            <span class="material-icons">{{ showPasswordPanel ? 'expand_less' : 'expand_more' }}</span>
+          </button>
+        </div>
+
+        <div class="pcard-body" *ngIf="!showPasswordPanel">
+          <div class="security-hint">
+            <span class="material-icons">shield</span>
+            <p>{{ 'profile.password_info' | translate }}</p>
+          </div>
+        </div>
+
+        <div class="pcard-body" *ngIf="showPasswordPanel">
+          <div class="alert-error" *ngIf="passwordError">
             <span class="material-icons">error_outline</span>
-            {{ passwordError }}
+            {{ passwordError | translate }}
           </div>
           <div class="form-group">
             <label>{{ 'profile.current_password' | translate }}</label>
-            <input
-              type="password"
-              [(ngModel)]="passwordForm.current_password"
-              name="current_password"
-              required
-            />
+            <input type="password" class="form-control" [(ngModel)]="passwordForm.current_password" />
           </div>
           <div class="form-group">
             <label>{{ 'profile.new_password' | translate }}</label>
-            <input
-              type="password"
-              [(ngModel)]="passwordForm.new_password"
-              name="new_password"
-              required
-            />
+            <input type="password" class="form-control"
+                   [(ngModel)]="passwordForm.new_password"
+                   (input)="computeStrength(passwordForm.new_password)" />
+            <div class="strength-bar" *ngIf="passwordForm.new_password">
+              <div class="strength-track">
+                <div class="strength-fill" [class]="strengthClass"
+                     [style.width]="(passwordStrength * 25) + '%'"></div>
+              </div>
+              <span class="strength-label" [class]="strengthClass">{{ strengthLabel | translate }}</span>
+            </div>
           </div>
           <div class="form-group">
             <label>{{ 'profile.confirm_password' | translate }}</label>
-            <input
-              type="password"
-              [(ngModel)]="passwordForm.confirm_password"
-              name="confirm_password"
-              required
-            />
+            <input type="password" class="form-control" [(ngModel)]="passwordForm.confirm_password" />
           </div>
           <div class="form-actions">
-            <button type="button" class="btn-secondary" (click)="toggleChangePassword()">
-              {{ 'profile.cancel' | translate }}
-            </button>
-            <button type="submit" class="btn-primary">
+            <button class="btn-ghost" (click)="cancelPassword()">{{ 'common.cancel' | translate }}</button>
+            <button class="btn-primary" (click)="savePassword()" [disabled]="savingPassword">
               <span class="material-icons">lock_reset</span>
               {{ 'profile.update_password' | translate }}
             </button>
           </div>
-        </form>
+        </div>
+      </div>
 
-        <div *ngIf="!changePasswordMode" class="security-info">
-          <div class="security-item">
-            <span class="material-icons">lock</span>
+      <!-- Email Change card -->
+      <div class="pcard">
+        <div class="pcard-header">
+          <div class="pcard-title">
+            <span class="material-icons">email</span>
             <div>
-              <h3>{{ 'profile.password' | translate }}</h3>
-              <p>{{ 'profile.password_info' | translate }}</p>
+              <h2>{{ 'profile.change_email' | translate }}</h2>
+              <p>{{ 'profile.change_email_desc' | translate }}</p>
             </div>
           </div>
         </div>
-      </div>
-    </div>
 
-    <!-- Account Details Card -->
-    <div class="profile-card">
-      <div class="card-header">
-        <div>
-          <h2>{{ 'profile.account_details' | translate }}</h2>
-          <p>{{ 'profile.account_details_desc' | translate }}</p>
+        <!-- idle -->
+        <div class="pcard-body" *ngIf="emailStep === 'idle'">
+          <div class="form-group">
+            <label>{{ 'profile.new_email' | translate }}</label>
+            <input type="email" class="form-control" [(ngModel)]="newEmail"
+                   [placeholder]="'profile.new_email_placeholder' | translate" />
+          </div>
+          <div class="alert-error" *ngIf="emailError">
+            <span class="material-icons">error_outline</span>
+            {{ emailError | translate }}
+          </div>
+          <button class="btn-primary full-width" (click)="sendEmailOtp()" [disabled]="!newEmail || sendingOtp">
+            <span class="material-icons">send</span>
+            {{ 'profile.send_otp' | translate }}
+          </button>
+        </div>
+
+        <!-- otp_sent -->
+        <div class="pcard-body" *ngIf="emailStep === 'otp_sent'">
+          <div class="otp-hint">
+            <span class="material-icons">mark_email_read</span>
+            <p>{{ 'profile.otp_sent_hint' | translate }} <strong>{{ newEmail }}</strong></p>
+          </div>
+          <div class="form-group">
+            <label>{{ 'profile.otp_code' | translate }}</label>
+            <input type="text" class="form-control otp-input" [(ngModel)]="emailOtpCode"
+                   maxlength="6" [placeholder]="'profile.otp_placeholder' | translate" />
+          </div>
+          <div class="alert-error" *ngIf="emailError">
+            <span class="material-icons">error_outline</span>
+            {{ emailError | translate }}
+          </div>
+          <div class="form-actions">
+            <button class="btn-ghost" (click)="cancelEmailChange()">{{ 'common.cancel' | translate }}</button>
+            <button class="btn-primary" (click)="confirmEmailChange()" [disabled]="!emailOtpCode || confirmingEmail">
+              <span class="material-icons">verified</span>
+              {{ 'profile.verify_otp' | translate }}
+            </button>
+          </div>
+        </div>
+
+        <!-- done -->
+        <div class="pcard-body success-panel" *ngIf="emailStep === 'done'">
+          <span class="material-icons success-icon">check_circle</span>
+          <p>{{ 'profile.email_changed_success' | translate }}</p>
+          <button class="btn-ghost" (click)="cancelEmailChange()">{{ 'common.close' | translate }}</button>
         </div>
       </div>
-      <div class="card-body">
-        <div class="info-grid">
-          <div class="info-item">
-            <span class="material-icons">badge</span>
-            <div>
-              <label>{{ 'profile.role' | translate }}</label>
-              <p>{{ currentUser?.role?.name }}</p>
-            </div>
-          </div>
-          <div class="info-item">
-            <span class="material-icons">calendar_today</span>
-            <div>
-              <label>{{ 'profile.member_since' | translate }}</label>
-              <p>{{ currentUser?.created_at | date:'mediumDate' }}</p>
-            </div>
-          </div>
-          <div class="info-item">
-            <span class="material-icons">update</span>
-            <div>
-              <label>{{ 'profile.last_updated' | translate }}</label>
-              <p>{{ currentUser?.updated_at | date:'mediumDate' }}</p>
-            </div>
-          </div>
-          <div class="info-item">
-            <span class="material-icons">verified</span>
-            <div>
-              <label>{{ 'profile.status' | translate }}</label>
-              <p class="status-active">{{ 'profile.active' | translate }}</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+
+    </div><!-- /RIGHT COLUMN -->
   </div>
 </div>

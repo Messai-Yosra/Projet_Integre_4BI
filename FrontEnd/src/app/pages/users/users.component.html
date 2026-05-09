@@ -1,240 +1,248 @@
-<div class="users-container">
+<!-- Admin confirm guard -->
+<app-admin-confirm-modal
+  *ngIf="showAdminConfirm"
+  (confirmed)="onAdminConfirmed()"
+  (cancelled)="onAdminCancelled()">
+</app-admin-confirm-modal>
 
-  <!-- Page Header -->
+<div class="users-container" *ngIf="!showAdminConfirm">
+
+  <!-- ── Page header ────────────────────────────────────────────────────── -->
   <div class="page-header">
-    <div class="header-text">
-      <h1>{{ 'users.title' | translate }}</h1>
-      <p>{{ 'users.subtitle' | translate }}</p>
+    <div class="page-title">
+      <span class="material-icons">manage_accounts</span>
+      <div>
+        <h1>{{ 'users.title' | translate }}</h1>
+        <p>{{ 'users.subtitle' | translate }}</p>
+      </div>
     </div>
-    <button class="btn-primary" (click)="openCreateModal()">
+    <button class="btn-primary" (click)="openCreate()">
       <span class="material-icons">person_add</span>
       {{ 'users.add_user' | translate }}
     </button>
   </div>
 
-  <!-- Toolbar -->
-  <div class="users-toolbar">
+  <!-- ── Stats bar ─────────────────────────────────────────────────────── -->
+  <div class="stats-bar">
+    <div class="stat-card">
+      <div class="stat-icon g1"><span class="material-icons">group</span></div>
+      <div>
+        <div class="stat-value">{{ totalUsers }}</div>
+        <div class="stat-label">{{ 'users.total' | translate }}</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon g2"><span class="material-icons">check_circle</span></div>
+      <div>
+        <div class="stat-value">{{ activeUsers }}</div>
+        <div class="stat-label">{{ 'users.active' | translate }}</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon g3"><span class="material-icons">pause_circle</span></div>
+      <div>
+        <div class="stat-value">{{ inactiveUsers }}</div>
+        <div class="stat-label">{{ 'users.inactive' | translate }}</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon g4"><span class="material-icons">admin_panel_settings</span></div>
+      <div>
+        <div class="stat-value">{{ adminUsers }}</div>
+        <div class="stat-label">{{ 'users.admins' | translate }}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Filters ────────────────────────────────────────────────────────── -->
+  <div class="filters-row">
     <div class="search-box">
       <span class="material-icons">search</span>
-      <input
-        type="text"
-        [(ngModel)]="searchTerm"
-        [placeholder]="'users.search_placeholder' | translate"
-      />
-      <button class="clear-btn" *ngIf="searchTerm" (click)="searchTerm = ''">
-        <span class="material-icons">close</span>
-      </button>
+      <input type="text" [(ngModel)]="searchTerm"
+             [placeholder]="'users.search_placeholder' | translate" />
     </div>
-    <div class="toolbar-stats">
-      <span class="stat-badge">
-        <span class="material-icons">people</span>
-        {{ filteredUsers.length }} {{ 'users.total_users' | translate }}
-      </span>
-    </div>
+    <select class="role-filter" [(ngModel)]="filterRole">
+      <option value="">{{ 'users.all_roles' | translate }}</option>
+      <option *ngFor="let r of roles" [value]="r.id">{{ r.name }}</option>
+    </select>
   </div>
 
-  <!-- Error State -->
-  <div class="error-state" *ngIf="errorMessage">
-    <span class="material-icons">error_outline</span>
-    <p>{{ errorMessage }}</p>
-    <button class="btn-primary" (click)="loadUsers()">
-      <span class="material-icons">refresh</span>
-      Retry
-    </button>
-  </div>
-
-  <!-- Loading State -->
+  <!-- ── Loading ───────────────────────────────────────────────────────── -->
   <div class="loading-state" *ngIf="loading">
     <div class="spinner"></div>
-    <p>Loading users...</p>
   </div>
 
-  <!-- Users Table -->
-  <div class="users-table-container" *ngIf="!loading && !errorMessage">
-    <table class="users-table">
-      <thead>
-        <tr>
-          <th>{{ 'users.user' | translate }}</th>
-          <th>{{ 'users.email' | translate }}</th>
-          <th>{{ 'users.role' | translate }}</th>
-          <th>{{ 'users.status' | translate }}</th>
-          <th>{{ 'users.actions' | translate }}</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let user of filteredUsers; let i = index" class="user-row">
-          <td>
-            <div class="user-cell">
-              <div class="user-avatar" [style.background]="getAvatarColor(i)">
-                {{ getUserInitials(user) }}
-              </div>
-              <div class="user-info">
-                <div class="user-name">{{ user.first_name || '' }} {{ user.last_name || '' }}</div>
-                <div class="user-username">{{ '@' + user.username }}</div>
-              </div>
-            </div>
-          </td>
-          <td>
-            <div class="email-cell">
-              <span class="material-icons">email</span>
-              {{ user.email }}
-            </div>
-          </td>
-          <td>
-            <span class="role-badge" [class]="'role-' + (user.role?.name | lowercase | slice:0:5)">
-              {{ user.role?.name }}
-            </span>
-          </td>
-          <td>
-            <span class="status-badge" [class.active]="user.is_active" [class.inactive]="!user.is_active">
-              {{ user.is_active ? ('users.active' | translate) : 'Inactive' }}
-            </span>
-          </td>
-          <td>
-            <div class="action-buttons">
-              <button class="btn-icon edit" (click)="openEditModal(user)" [title]="'users.edit' | translate">
-                <span class="material-icons">edit</span>
-              </button>
-              <button
-                class="btn-icon danger"
-                (click)="openDeleteModal(user)"
-                [title]="'users.delete' | translate"
-                [disabled]="user.id === currentUser?.id"
-              >
-                <span class="material-icons">delete</span>
-              </button>
-            </div>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+  <!-- ── Empty ─────────────────────────────────────────────────────────── -->
+  <div class="empty-state" *ngIf="!loading && filteredUsers.length === 0">
+    <span class="material-icons">person_search</span>
+    <h3>{{ 'users.no_users' | translate }}</h3>
+  </div>
 
-    <div *ngIf="filteredUsers.length === 0 && !loading" class="empty-state">
-      <span class="material-icons">person_search</span>
-      <p>{{ searchTerm ? 'No users match your search' : ('users.no_users' | translate) }}</p>
+  <!-- ── User cards grid ───────────────────────────────────────────────── -->
+  <div class="user-grid" *ngIf="!loading && filteredUsers.length > 0">
+    <div class="user-card" *ngFor="let user of filteredUsers; let i = index"
+         [class.inactive]="!user.is_active">
+
+      <div class="card-header">
+        <div class="avatar-wrap">
+          <img *ngIf="getPhotoUrl(user)" [src]="getPhotoUrl(user)" class="avatar-img" alt="avatar" />
+          <div *ngIf="!getPhotoUrl(user)" class="avatar-initials"
+               [style.background]="getAvatarGradient(i)">
+            {{ getInitials(user) }}
+          </div>
+          <div class="status-dot" [class.online]="user.is_active"></div>
+        </div>
+        <div class="role-badge" [class]="'rb-' + (i % 5 + 1)">
+          {{ user.role ? user.role.name : '—' }}
+        </div>
+      </div>
+
+      <div class="card-body">
+        <h3>{{ user.first_name || '' }} {{ user.last_name || '' }}</h3>
+        <p class="username">&#64;{{ user.username }}</p>
+        <p class="email">
+          <span class="material-icons">email</span>
+          {{ user.email }}
+        </p>
+        <div class="status-badge" [class.active]="user.is_active">
+          <span class="material-icons">{{ user.is_active ? 'check_circle' : 'cancel' }}</span>
+          {{ user.is_active ? ('users.active' | translate) : ('users.inactive' | translate) }}
+        </div>
+      </div>
+
+      <div class="card-actions">
+        <button class="act-btn view" (click)="openPrivileges(user)" [title]="'users.view_privileges' | translate">
+          <span class="material-icons">visibility</span>
+        </button>
+        <button class="act-btn edit" (click)="openEdit(user)" [title]="'users.edit' | translate">
+          <span class="material-icons">edit</span>
+        </button>
+        <button class="act-btn delete" (click)="userToDelete = user; showDeleteModal = true"
+                [title]="'users.delete' | translate">
+          <span class="material-icons">delete</span>
+        </button>
+      </div>
     </div>
   </div>
+
 </div>
 
-<!-- ===== Create/Edit Modal ===== -->
+<!-- ══ CREATE / EDIT MODAL ══════════════════════════════════════════════ -->
 <div class="modal-overlay" *ngIf="showModal" (click)="closeModal()">
-  <div class="modal-content" (click)="$event.stopPropagation()">
+  <div class="modal-box modal-lg" (click)="$event.stopPropagation()">
     <div class="modal-header">
-      <div class="modal-title">
-        <span class="material-icons">{{ editMode ? 'edit' : 'person_add' }}</span>
-        <h2>{{ editMode ? ('users.edit_user' | translate) : ('users.create_user' | translate) }}</h2>
-      </div>
-      <button class="btn-icon" (click)="closeModal()">
+      <h2>{{ (editMode ? 'users.edit_user' : 'users.create_user') | translate }}</h2>
+      <button class="modal-close" (click)="closeModal()">
         <span class="material-icons">close</span>
       </button>
     </div>
     <div class="modal-body">
-      <form (ngSubmit)="saveUser()" #userForm="ngForm">
-        <div class="form-row">
-          <div class="form-group">
-            <label>{{ 'users.username' | translate }} *</label>
-            <div class="input-wrapper">
-              <span class="material-icons">person</span>
-              <input type="text" [(ngModel)]="formData.username" name="username" required [disabled]="editMode" />
-            </div>
-          </div>
-          <div class="form-group">
-            <label>{{ 'users.email' | translate }} *</label>
-            <div class="input-wrapper">
-              <span class="material-icons">email</span>
-              <input type="email" [(ngModel)]="formData.email" name="email" required />
-            </div>
-          </div>
+      <div class="photo-upload-section">
+        <div class="photo-preview">
+          <img *ngIf="photoPreview" [src]="photoPreview" alt="preview" />
+          <span class="material-icons" *ngIf="!photoPreview">person</span>
         </div>
-        <div class="form-row">
-          <div class="form-group">
-            <label>{{ 'users.first_name' | translate }}</label>
-            <div class="input-wrapper">
-              <span class="material-icons">badge</span>
-              <input type="text" [(ngModel)]="formData.first_name" name="first_name" />
-            </div>
-          </div>
-          <div class="form-group">
-            <label>{{ 'users.last_name' | translate }}</label>
-            <div class="input-wrapper">
-              <span class="material-icons">badge</span>
-              <input type="text" [(ngModel)]="formData.last_name" name="last_name" />
-            </div>
-          </div>
+        <label class="photo-label btn-secondary">
+          <span class="material-icons">photo_camera</span>
+          {{ 'users.upload_photo' | translate }}
+          <input type="file" accept="image/*" (change)="onPhotoSelected($event)" hidden />
+        </label>
+      </div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>{{ 'users.first_name' | translate }}</label>
+          <input type="text" [(ngModel)]="formData.first_name" class="form-control" />
         </div>
-        <div class="form-row">
-          <div class="form-group">
-            <label>{{ 'users.password' | translate }} {{ editMode ? '(optional)' : '*' }}</label>
-            <div class="input-wrapper">
-              <span class="material-icons">lock</span>
-              <input
-                type="password"
-                [(ngModel)]="formData.password"
-                name="password"
-                [required]="!editMode"
-                [placeholder]="editMode ? ('users.password_placeholder' | translate) : ''"
-              />
-            </div>
-          </div>
-          <div class="form-group">
-            <label>{{ 'users.role' | translate }} *</label>
-            <div class="input-wrapper">
-              <span class="material-icons">admin_panel_settings</span>
-              <select [(ngModel)]="formData.role_id" name="role_id" required>
-                <option *ngFor="let role of roles" [value]="role.id">{{ role.name }}</option>
-              </select>
-            </div>
-          </div>
+        <div class="form-group">
+          <label>{{ 'users.last_name' | translate }}</label>
+          <input type="text" [(ngModel)]="formData.last_name" class="form-control" />
         </div>
-        <div class="modal-actions">
-          <button type="button" class="btn-secondary" (click)="closeModal()">
-            <span class="material-icons">close</span>
-            {{ 'users.cancel' | translate }}
-          </button>
-          <button type="submit" class="btn-primary">
-            <span class="material-icons">{{ editMode ? 'save' : 'person_add' }}</span>
-            {{ editMode ? ('users.update' | translate) : ('users.create' | translate) }}
-          </button>
+        <div class="form-group">
+          <label>{{ 'users.username' | translate }}</label>
+          <input type="text" [(ngModel)]="formData.username" class="form-control"
+                 [disabled]="editMode" />
         </div>
-      </form>
+        <div class="form-group">
+          <label>{{ 'users.email' | translate }}</label>
+          <input type="email" [(ngModel)]="formData.email" class="form-control" />
+        </div>
+        <div class="form-group">
+          <label>{{ 'users.password' | translate }}</label>
+          <input type="password" [(ngModel)]="formData.password" class="form-control"
+                 [placeholder]="editMode ? ('users.password_placeholder' | translate) : ''" />
+        </div>
+        <div class="form-group">
+          <label>{{ 'users.role' | translate }}</label>
+          <select [(ngModel)]="formData.role_id" class="form-control">
+            <option *ngFor="let r of roles" [value]="r.id">{{ r.name }}</option>
+          </select>
+        </div>
+        <div class="form-group toggle-group">
+          <label>{{ 'users.active_account' | translate }}</label>
+          <label class="toggle-switch">
+            <input type="checkbox" [(ngModel)]="formData.is_active" />
+            <span class="slider"></span>
+          </label>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="closeModal()">{{ 'common.cancel' | translate }}</button>
+      <button class="btn-primary" (click)="saveUser()">
+        <span class="material-icons">{{ editMode ? 'save' : 'person_add' }}</span>
+        {{ (editMode ? 'common.save' : 'users.create') | translate }}
+      </button>
     </div>
   </div>
 </div>
 
-<!-- ===== Delete Confirmation Modal ===== -->
-<div class="modal-overlay" *ngIf="showDeleteModal" (click)="closeDeleteModal()">
-  <div class="modal-content modal-small" (click)="$event.stopPropagation()">
-    <div class="modal-header danger-header">
-      <div class="modal-title">
-        <span class="material-icons">warning</span>
-        <h2>{{ 'users.delete_user' | translate }}</h2>
-      </div>
-      <button class="btn-icon" (click)="closeDeleteModal()">
+<!-- ══ DELETE MODAL ═════════════════════════════════════════════════════ -->
+<div class="modal-overlay" *ngIf="showDeleteModal" (click)="showDeleteModal = false">
+  <div class="modal-box modal-sm" (click)="$event.stopPropagation()">
+    <div class="delete-icon"><span class="material-icons">warning</span></div>
+    <h2>{{ 'users.delete_user' | translate }}</h2>
+    <p>{{ 'users.delete_confirmation' | translate }}
+       <strong *ngIf="userToDelete"> {{ userToDelete.username }}</strong> ?</p>
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="showDeleteModal = false">{{ 'common.cancel' | translate }}</button>
+      <button class="btn-danger" (click)="confirmDelete()">
+        <span class="material-icons">delete</span>
+        {{ 'common.delete' | translate }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ PRIVILEGES MODAL ═════════════════════════════════════════════════ -->
+<div class="modal-overlay" *ngIf="showPrivilegesModal" (click)="showPrivilegesModal = false">
+  <div class="modal-box" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>{{ 'users.privileges_title' | translate }}</h2>
+      <button class="modal-close" (click)="showPrivilegesModal = false">
         <span class="material-icons">close</span>
       </button>
     </div>
-    <div class="modal-body">
-      <div class="delete-warning">
-        <span class="material-icons">person_off</span>
-        <p>{{ 'users.delete_confirmation' | translate }}</p>
-        <div class="user-to-delete">
-          <div class="user-avatar-sm">{{ getUserInitials(userToDelete!) }}</div>
-          <div>
-            <strong>{{ userToDelete?.first_name }} {{ userToDelete?.last_name }}</strong>
-            <span>{{ '@' + (userToDelete?.username || '') }}</span>
-          </div>
+    <div class="modal-body" *ngIf="viewingUser">
+      <div class="priv-user-info">
+        <div class="avatar-sm" [style.background]="getAvatarGradient(0)">
+          {{ getInitials(viewingUser) }}
+        </div>
+        <div>
+          <div class="priv-name">{{ viewingUser.first_name }} {{ viewingUser.last_name }}</div>
+          <div class="priv-role">{{ viewingUser.role ? viewingUser.role.name : '' }}</div>
         </div>
       </div>
-    </div>
-    <div class="modal-actions">
-      <button class="btn-secondary" (click)="closeDeleteModal()">
-        <span class="material-icons">close</span>
-        {{ 'users.cancel' | translate }}
-      </button>
-      <button class="btn-danger" (click)="confirmDelete()">
-        <span class="material-icons">delete_forever</span>
-        {{ 'users.delete' | translate }}
-      </button>
+      <div class="priv-list">
+        <div *ngFor="let d of getUserDashboards(viewingUser)" class="priv-item">
+          <span class="material-icons">bar_chart</span>
+          <span>{{ d.name }}</span>
+          <span class="priv-badge">Accès</span>
+        </div>
+        <div class="priv-empty" *ngIf="getUserDashboards(viewingUser).length === 0">
+          <span class="material-icons">lock</span>
+          {{ 'users.no_privileges' | translate }}
+        </div>
+      </div>
     </div>
   </div>
 </div>

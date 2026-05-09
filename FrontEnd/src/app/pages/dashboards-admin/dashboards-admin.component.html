@@ -1,0 +1,186 @@
+<!-- Admin confirm guard -->
+<app-admin-confirm-modal
+  *ngIf="showAdminConfirm"
+  (confirmed)="onAdminConfirmed()"
+  (cancelled)="onAdminCancelled()">
+</app-admin-confirm-modal>
+
+<div class="bi-container" *ngIf="!showAdminConfirm">
+
+  <!-- Header -->
+  <div class="page-header">
+    <div class="page-title">
+      <span class="material-icons">bar_chart</span>
+      <div>
+        <h1>{{ 'bi.title' | translate }}</h1>
+        <p>{{ 'bi.subtitle' | translate }}</p>
+      </div>
+    </div>
+    <button class="btn-primary" (click)="openCreate()">
+      <span class="material-icons">add</span>
+      {{ 'bi.add_dashboard' | translate }}
+    </button>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-bar">
+    <div class="stat-card">
+      <div class="stat-icon s1"><span class="material-icons">dashboard</span></div>
+      <div>
+        <div class="stat-value">{{ dashboards.length }}</div>
+        <div class="stat-label">{{ 'bi.total' | translate }}</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon s2"><span class="material-icons">check_circle</span></div>
+      <div>
+        <div class="stat-value">{{ activeCount }}</div>
+        <div class="stat-label">{{ 'bi.active' | translate }}</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon s3"><span class="material-icons">link</span></div>
+      <div>
+        <div class="stat-value">{{ withEmbedCount }}</div>
+        <div class="stat-label">{{ 'bi.with_embed' | translate }}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div class="loading-state" *ngIf="loading">
+    <div class="spinner"></div>
+  </div>
+
+  <!-- Empty -->
+  <div class="empty-state" *ngIf="!loading && dashboards.length === 0">
+    <span class="material-icons">bar_chart</span>
+    <h3>{{ 'bi.no_dashboards' | translate }}</h3>
+  </div>
+
+  <!-- Dashboard List -->
+  <div class="dash-list" *ngIf="!loading && dashboards.length > 0">
+    <div class="dash-row" *ngFor="let d of dashboards" [class.inactive]="!d.is_active">
+
+      <div class="dash-icon-col">
+        <div class="dash-icon-wrap">
+          <span class="material-icons">{{ d.icon || 'analytics' }}</span>
+        </div>
+      </div>
+
+      <div class="dash-main">
+        <div class="dash-name-row">
+          <h3>{{ d.name }}</h3>
+          <span class="slug-tag">{{ d.slug }}</span>
+          <span class="status-badge" [class.active]="d.is_active">
+            {{ d.is_active ? ('bi.active' | translate) : ('bi.inactive' | translate) }}
+          </span>
+        </div>
+        <p class="dash-desc" *ngIf="d.description">{{ d.description }}</p>
+        <div class="embed-row">
+          <span class="material-icons embed-icon">{{ d.embed_url ? 'link' : 'link_off' }}</span>
+          <span class="embed-url" [class.empty]="!d.embed_url">
+            {{ d.embed_url || ('bi.no_embed_url' | translate) }}
+          </span>
+        </div>
+      </div>
+
+      <div class="dash-order">
+        <span class="order-badge">#{{ d.order_index }}</span>
+      </div>
+
+      <div class="dash-actions">
+        <label class="toggle-switch" [title]="'bi.toggle_active' | translate">
+          <input type="checkbox" [checked]="d.is_active" (change)="toggleActive(d)" />
+          <span class="slider"></span>
+        </label>
+        <button class="act-btn edit" (click)="openEdit(d)" [title]="'common.edit' | translate">
+          <span class="material-icons">edit</span>
+        </button>
+        <button class="act-btn delete" (click)="openDelete(d)" [title]="'common.delete' | translate">
+          <span class="material-icons">delete</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ══ CREATE / EDIT MODAL ══════════════════════════════════════════════ -->
+<div class="modal-overlay" *ngIf="showModal" (click)="closeModal()">
+  <div class="modal-box modal-lg" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>{{ (editMode ? 'bi.edit_dashboard' : 'bi.create_dashboard') | translate }}</h2>
+      <button class="modal-close" (click)="closeModal()">
+        <span class="material-icons">close</span>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group">
+          <label>{{ 'bi.name' | translate }}</label>
+          <input type="text" class="form-control" [(ngModel)]="formData.name"
+                 (input)="autoSlug()"
+                 [placeholder]="'bi.name_placeholder' | translate" />
+        </div>
+        <div class="form-group">
+          <label>{{ 'bi.slug' | translate }}</label>
+          <input type="text" class="form-control" [(ngModel)]="formData.slug"
+                 [placeholder]="'bi.slug_placeholder' | translate" />
+        </div>
+        <div class="form-group full-span">
+          <label>{{ 'bi.description' | translate }}</label>
+          <input type="text" class="form-control" [(ngModel)]="formData.description"
+                 [placeholder]="'bi.description_placeholder' | translate" />
+        </div>
+        <div class="form-group full-span">
+          <label>{{ 'bi.embed_url' | translate }}</label>
+          <input type="url" class="form-control" [(ngModel)]="formData.embed_url"
+                 [placeholder]="'bi.embed_url_placeholder' | translate" />
+        </div>
+        <div class="form-group">
+          <label>{{ 'bi.icon' | translate }}</label>
+          <select class="form-control" [(ngModel)]="formData.icon">
+            <option *ngFor="let ico of iconOptions" [value]="ico">{{ ico }}</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>{{ 'bi.order' | translate }}</label>
+          <input type="number" class="form-control" [(ngModel)]="formData.order_index" min="0" />
+        </div>
+        <div class="form-group toggle-row">
+          <label>{{ 'bi.active_label' | translate }}</label>
+          <label class="toggle-switch">
+            <input type="checkbox" [(ngModel)]="formData.is_active" />
+            <span class="slider"></span>
+          </label>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="closeModal()">{{ 'common.cancel' | translate }}</button>
+      <button class="btn-primary" (click)="saveDashboard()"
+              [disabled]="!formData.name?.trim() || !formData.slug?.trim() || saving">
+        <span class="material-icons">{{ saving ? 'hourglass_empty' : (editMode ? 'save' : 'add') }}</span>
+        {{ (editMode ? 'common.save' : 'bi.create') | translate }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ DELETE MODAL ═════════════════════════════════════════════════════ -->
+<div class="modal-overlay" *ngIf="showDeleteModal" (click)="showDeleteModal = false">
+  <div class="modal-box modal-sm" (click)="$event.stopPropagation()">
+    <div class="delete-icon"><span class="material-icons">warning</span></div>
+    <h2>{{ 'bi.delete_dashboard' | translate }}</h2>
+    <p>{{ 'bi.delete_confirmation' | translate }}
+       <strong *ngIf="dashToDelete"> {{ dashToDelete.name }}</strong> ?</p>
+    <div class="modal-footer centered">
+      <button class="btn-secondary" (click)="showDeleteModal = false">{{ 'common.cancel' | translate }}</button>
+      <button class="btn-danger" (click)="confirmDelete()" [disabled]="deleting">
+        <span class="material-icons">delete</span>
+        {{ 'common.delete' | translate }}
+      </button>
+    </div>
+  </div>
+</div>

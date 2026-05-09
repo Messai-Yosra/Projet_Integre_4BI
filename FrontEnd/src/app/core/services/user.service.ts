@@ -4,9 +4,7 @@ import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { User, Role } from '../models/user.model';
 
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable({ providedIn: 'root' })
 export class UserService {
   constructor(private http: HttpClient) {}
 
@@ -32,6 +30,26 @@ export class UserService {
 
   changePassword(id: number, passwordData: any): Observable<void> {
     return this.http.put<void>(`${environment.apiUrl}/users/${id}/password`, passwordData);
+  }
+
+  uploadPhoto(id: number, file: File): Observable<{ profile_image: string }> {
+    const form = new FormData();
+    form.append('photo', file);
+    return this.http.post<{ profile_image: string }>(
+      `${environment.apiUrl}/users/${id}/photo`, form
+    );
+  }
+
+  requestEmailChange(newEmail: string): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(
+      `${environment.apiUrl}/users/request-email-change`, { new_email: newEmail }
+    );
+  }
+
+  confirmEmailChange(newEmail: string, token: string): Observable<{ message: string }> {
+    return this.http.put<{ message: string }>(
+      `${environment.apiUrl}/users/confirm-email-change`, { new_email: newEmail, token }
+    );
   }
 
   getAllRoles(): Observable<Role[]> {

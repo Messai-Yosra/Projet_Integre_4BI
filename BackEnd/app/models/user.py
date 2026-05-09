@@ -2,9 +2,10 @@ from app.extensions import db
 from datetime import datetime
 import bcrypt
 
+
 class User(db.Model):
     __tablename__ = 'users'
-    
+
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
@@ -14,18 +15,30 @@ class User(db.Model):
     profile_image = db.Column(db.String(255))
     is_active = db.Column(db.Boolean, default=True)
     role_id = db.Column(db.Integer, db.ForeignKey('roles.id'), nullable=False)
+    last_activity = db.Column(db.DateTime)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    
+
     role = db.relationship('Role', back_populates='users')
     audit_logs = db.relationship('AuditLog', back_populates='user', lazy='dynamic')
-    
+    notifications = db.relationship('Notification', back_populates='user',
+                                    lazy='dynamic', cascade='all, delete-orphan')
+    onboarding = db.relationship('OnboardingProgress', back_populates='user',
+                                 uselist=False, cascade='all, delete-orphan')
+
     def set_password(self, password):
-        self.password_hash = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
-    
+        self.password_hash = bcrypt.hashpw(
+            password.encode('utf-8'), bcrypt.gensalt()
+        ).decode('utf-8')
+
     def check_password(self, password):
-        return bcrypt.checkpw(password.encode('utf-8'), self.password_hash.encode('utf-8'))
-    
+        return bcrypt.checkpw(
+            password.encode('utf-8'), self.password_hash.encode('utf-8')
+        )
+
+    def touch_activity(self):
+        self.last_activity = datetime.utcnow()
+
     def to_dict(self):
         return {
             'id': self.id,
@@ -37,6 +50,7 @@ class User(db.Model):
             'is_active': self.is_active,
             'role_id': self.role_id,
             'role': self.role.to_dict() if self.role else None,
+            'last_activity': self.last_activity.isoformat() if self.last_activity else None,
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'updated_at': self.updated_at.isoformat() if self.updated_at else None
         }

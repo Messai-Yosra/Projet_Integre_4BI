@@ -5,18 +5,6 @@ import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { DashboardService } from '@core/services/dashboard.service';
 import { Dashboard } from '@core/models/user.model';
 
-// ─── Per-dashboard Power BI embed URLs ────────────────────────────────────────
-// When you get the embed URL from Microsoft Fabric / Power BI Service,
-// paste it here for the matching slug.
-const POWERBI_EMBED_URLS: Record<string, string> = {
-  overview:     '',   // TODO: paste Power BI embed URL for Overview
-  operational:  '',   // TODO: paste Power BI embed URL for Operational
-  equipment:    '',   // TODO: paste Power BI embed URL for Equipment
-  sponsorship:  '',   // TODO: paste Power BI embed URL for Sponsorship
-  sdg:          '',   // TODO: paste Power BI embed URL for SDG
-};
-// ──────────────────────────────────────────────────────────────────────────────
-
 const DASHBOARD_META: Record<string, { icon: string; gradient: string; accent: string }> = {
   overview:    { icon: 'dashboard',   gradient: 'linear-gradient(135deg,#667eea,#764ba2)', accent: '#667eea' },
   operational: { icon: 'settings',    gradient: 'linear-gradient(135deg,#f093fb,#f5576c)', accent: '#f093fb' },
@@ -66,7 +54,7 @@ export class DashboardViewComponent implements OnInit {
           this.router.navigate(['/home']);
           return;
         }
-        const embedUrl = POWERBI_EMBED_URLS[this.slug] ?? '';
+        const embedUrl = this.dashboard.embed_url || '';
         if (embedUrl) {
           this.safeEmbedUrl = this.sanitizer.bypassSecurityTrustResourceUrl(embedUrl);
           this.isEmbedReady = true;

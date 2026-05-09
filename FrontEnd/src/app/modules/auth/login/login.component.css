@@ -94,6 +94,22 @@
   text-align: center;
 }
 
+.forgot-link {
+  text-align: right;
+  margin-top: -0.5rem;
+}
+
+.forgot-link a {
+  font-size: 0.85rem;
+  color: var(--primary);
+  text-decoration: none;
+  transition: var(--transition);
+}
+
+.forgot-link a:hover {
+  text-decoration: underline;
+}
+
 @media (max-width: 640px) {
   .login-card {
     padding: 2rem;

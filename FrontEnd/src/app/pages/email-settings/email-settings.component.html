@@ -1,0 +1,165 @@
+<!-- Admin confirm guard -->
+<app-admin-confirm-modal
+  *ngIf="showAdminConfirm"
+  (confirmed)="onAdminConfirmed()"
+  (cancelled)="onAdminCancelled()">
+</app-admin-confirm-modal>
+
+<div class="email-container" *ngIf="!showAdminConfirm">
+
+  <!-- Header -->
+  <div class="page-header">
+    <div class="page-title">
+      <span class="material-icons">email</span>
+      <div>
+        <h1>{{ 'email.title' | translate }}</h1>
+        <p>{{ 'email.subtitle' | translate }}</p>
+      </div>
+    </div>
+    <div class="status-pill" [class.active]="config.is_active">
+      <span class="material-icons">{{ config.is_active ? 'check_circle' : 'cancel' }}</span>
+      {{ config.is_active ? ('email.configured' | translate) : ('email.not_configured' | translate) }}
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div class="loading-state" *ngIf="loading">
+    <div class="spinner"></div>
+  </div>
+
+  <div class="email-grid" *ngIf="!loading">
+
+    <!-- SMTP Config Card -->
+    <div class="email-card main-card">
+      <div class="card-section-title">
+        <span class="material-icons">settings</span>
+        {{ 'email.server_settings' | translate }}
+      </div>
+
+      <!-- Port presets -->
+      <div class="port-presets">
+        <button class="preset-btn" [class.active]="config.port === 587"
+                (click)="setPort(587, true)">STARTTLS · 587</button>
+        <button class="preset-btn" [class.active]="config.port === 465"
+                (click)="setPort(465, true)">SSL/TLS · 465</button>
+        <button class="preset-btn" [class.active]="config.port === 25"
+                (click)="setPort(25, false)">SMTP · 25</button>
+      </div>
+
+      <div class="form-grid">
+        <div class="form-group full-span">
+          <label>{{ 'email.host' | translate }}</label>
+          <div class="input-with-icon">
+            <span class="material-icons">dns</span>
+            <input type="text" class="form-control" [(ngModel)]="config.host"
+                   placeholder="smtp.gmail.com" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label>{{ 'email.port' | translate }}</label>
+          <input type="number" class="form-control" [(ngModel)]="config.port" />
+        </div>
+        <div class="form-group toggle-row">
+          <label>{{ 'email.use_tls' | translate }}</label>
+          <label class="toggle-switch">
+            <input type="checkbox" [(ngModel)]="config.use_tls" />
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div class="form-group">
+          <label>{{ 'email.username' | translate }}</label>
+          <input type="text" class="form-control" [(ngModel)]="config.username"
+                 placeholder="user@gmail.com" autocomplete="username" />
+        </div>
+        <div class="form-group">
+          <label>{{ 'email.password' | translate }}</label>
+          <input type="password" class="form-control" [(ngModel)]="config.password"
+                 placeholder="••••••••" autocomplete="current-password" />
+        </div>
+      </div>
+
+      <div class="card-section-title" style="margin-top:1.25rem">
+        <span class="material-icons">contact_mail</span>
+        {{ 'email.sender_settings' | translate }}
+      </div>
+
+      <div class="form-grid">
+        <div class="form-group">
+          <label>{{ 'email.from_email' | translate }}</label>
+          <input type="email" class="form-control" [(ngModel)]="config.from_email"
+                 placeholder="noreply@myapp.com" />
+        </div>
+        <div class="form-group">
+          <label>{{ 'email.from_name' | translate }}</label>
+          <input type="text" class="form-control" [(ngModel)]="config.from_name"
+                 [placeholder]="'email.from_name_placeholder' | translate" />
+        </div>
+        <div class="form-group toggle-row full-span">
+          <label>{{ 'email.enable_smtp' | translate }}</label>
+          <label class="toggle-switch">
+            <input type="checkbox" [(ngModel)]="config.is_active" />
+            <span class="slider"></span>
+          </label>
+        </div>
+      </div>
+
+      <div class="card-actions">
+        <button class="btn-primary" (click)="saveConfig()" [disabled]="saving">
+          <span class="material-icons">{{ saving ? 'hourglass_empty' : 'save' }}</span>
+          {{ 'email.save_config' | translate }}
+        </button>
+      </div>
+    </div>
+
+    <!-- Test Card -->
+    <div class="email-card test-card">
+      <div class="card-section-title">
+        <span class="material-icons">send</span>
+        {{ 'email.test_title' | translate }}
+      </div>
+
+      <p class="test-desc">{{ 'email.test_desc' | translate }}</p>
+
+      <div class="form-group">
+        <label>{{ 'email.test_recipient' | translate }}</label>
+        <input type="email" class="form-control" [(ngModel)]="testEmail"
+               [placeholder]="'email.test_email_placeholder' | translate" />
+      </div>
+
+      <button class="btn-test" (click)="sendTest()" [disabled]="!testEmail || testing">
+        <span class="material-icons">{{ testing ? 'hourglass_empty' : 'send' }}</span>
+        {{ testing ? ('email.sending' | translate) : ('email.send_test' | translate) }}
+      </button>
+
+      <!-- Result -->
+      <div class="test-result success" *ngIf="testResult === 'success'">
+        <span class="material-icons">check_circle</span>
+        <div>
+          <div class="result-title">{{ 'email.test_success' | translate }}</div>
+          <div class="result-msg">{{ testMessage }}</div>
+        </div>
+      </div>
+
+      <div class="test-result error" *ngIf="testResult === 'error'">
+        <span class="material-icons">error</span>
+        <div>
+          <div class="result-title">{{ 'email.test_failed' | translate }}</div>
+          <div class="result-msg">{{ testMessage }}</div>
+        </div>
+      </div>
+
+      <!-- Tips -->
+      <div class="tips">
+        <div class="card-section-title" style="margin-bottom:.75rem">
+          <span class="material-icons">tips_and_updates</span>
+          {{ 'email.tips_title' | translate }}
+        </div>
+        <ul class="tips-list">
+          <li>{{ 'email.tip_gmail' | translate }}</li>
+          <li>{{ 'email.tip_tls' | translate }}</li>
+          <li>{{ 'email.tip_firewall' | translate }}</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>

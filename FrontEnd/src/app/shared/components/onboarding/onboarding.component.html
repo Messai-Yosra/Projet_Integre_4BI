@@ -1,0 +1,63 @@
+<div class="ob-overlay" (click)="dismiss()">
+  <div class="ob-panel" (click)="$event.stopPropagation()">
+
+    <!-- Header -->
+    <div class="ob-header">
+      <div class="ob-brand">
+        <span class="material-icons">sports_tennis</span>
+        <span>Guide AppPI</span>
+      </div>
+      <button class="ob-close" (click)="dismiss()">
+        <span class="material-icons">close</span>
+      </button>
+    </div>
+
+    <!-- Progress -->
+    <div class="ob-progress-wrap">
+      <div class="ob-progress-bar">
+        <div class="ob-progress-fill" [style.width.%]="progress"></div>
+      </div>
+      <span class="ob-progress-label">{{ currentIndex + 1 }} / {{ steps.length }}</span>
+    </div>
+
+    <!-- Step dots -->
+    <div class="ob-dots">
+      <button
+        *ngFor="let s of steps; let i = index"
+        class="ob-dot"
+        [class.active]="i === currentIndex"
+        [class.done]="isCompleted(i)"
+        (click)="goTo(i)"
+        [title]="i + 1">
+      </button>
+    </div>
+
+    <!-- Current step -->
+    <div class="ob-step">
+      <div class="ob-step-icon" [style.background]="current.gradient">
+        <span class="material-icons">{{ current.icon }}</span>
+      </div>
+      <h2>{{ current.titleKey | translate }}</h2>
+      <p>{{ current.descKey | translate }}</p>
+    </div>
+
+    <!-- Navigation -->
+    <div class="ob-nav">
+      <button class="ob-btn-ghost" (click)="prev()" [disabled]="currentIndex === 0">
+        <span class="material-icons">arrow_back</span>
+        {{ 'common.previous' | translate }}
+      </button>
+
+      <button class="ob-btn-skip" (click)="dismiss()">
+        {{ 'onboarding.skip' | translate }}
+      </button>
+
+      <button class="ob-btn-next" (click)="next()">
+        <span *ngIf="!isLast">{{ 'common.next' | translate }}</span>
+        <span *ngIf="isLast">{{ 'onboarding.finish' | translate }}</span>
+        <span class="material-icons">{{ isLast ? 'check' : 'arrow_forward' }}</span>
+      </button>
+    </div>
+
+  </div>
+</div>

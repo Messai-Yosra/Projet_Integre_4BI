@@ -31,6 +31,10 @@
         />
       </div>
 
+      <div class="forgot-link">
+        <a routerLink="/auth/forgot-password">{{ 'auth.forgot_password' | translate }}</a>
+      </div>
+
       <div *ngIf="error" class="error-message">
         {{ error }}
       </div>

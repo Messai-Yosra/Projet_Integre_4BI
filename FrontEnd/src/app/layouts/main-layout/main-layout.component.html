@@ -1,5 +1,6 @@
 <div class="main-layout" [class.sidebar-closed]="!sidebarOpen">
-  <!-- Sidebar -->
+
+  <!-- ── Sidebar ────────────────────────────────────────────────────────── -->
   <aside class="sidebar" [class.open]="sidebarOpen">
     <div class="sidebar-header">
       <div class="logo">
@@ -22,25 +23,40 @@
             {{ showDashboardsDropdown ? 'expand_less' : 'expand_more' }}
           </span>
         </div>
-        
         <div class="nav-dropdown-content" *ngIf="showDashboardsDropdown && sidebarOpen">
-          <a
-            *ngFor="let dashboard of dashboards"
-            [routerLink]="['/dashboard', dashboard.slug]"
-            routerLinkActive="active"
-            class="nav-item nav-sub-item"
-          >
-            <span class="material-icons">{{ dashboard.icon || 'analytics' }}</span>
-            <span class="nav-text">{{ dashboard.name }}</span>
+          <a *ngFor="let d of dashboards" [routerLink]="['/dashboard', d.slug]"
+             routerLinkActive="active" class="nav-item nav-sub-item">
+            <span class="material-icons">{{ d.icon || 'analytics' }}</span>
+            <span class="nav-text">{{ d.name }}</span>
           </a>
         </div>
+      </div>
+
+      <!-- Admin section -->
+      <div class="nav-section admin-section" *ngIf="isAdmin">
+        <div class="nav-section-title" *ngIf="sidebarOpen">Admin</div>
+        <a routerLink="/admin/users" routerLinkActive="active" class="nav-item">
+          <span class="material-icons">manage_accounts</span>
+          <span class="nav-text" *ngIf="sidebarOpen">{{ 'nav.users' | translate }}</span>
+        </a>
+        <a routerLink="/admin/roles" routerLinkActive="active" class="nav-item">
+          <span class="material-icons">badge</span>
+          <span class="nav-text" *ngIf="sidebarOpen">{{ 'nav.roles' | translate }}</span>
+        </a>
+        <a routerLink="/admin/dashboards" routerLinkActive="active" class="nav-item">
+          <span class="material-icons">bar_chart</span>
+          <span class="nav-text" *ngIf="sidebarOpen">{{ 'nav.bi_dashboards' | translate }}</span>
+        </a>
+        <a routerLink="/admin/email-settings" routerLinkActive="active" class="nav-item">
+          <span class="material-icons">email</span>
+          <span class="nav-text" *ngIf="sidebarOpen">{{ 'nav.email_settings' | translate }}</span>
+        </a>
       </div>
     </nav>
   </aside>
 
-  <!-- Main Content -->
+  <!-- ── Main content ───────────────────────────────────────────────────── -->
   <div class="main-content">
-    <!-- Navbar -->
     <header class="navbar">
       <div class="navbar-left">
         <button class="icon-btn" (click)="toggleSidebar()">
@@ -49,63 +65,71 @@
       </div>
 
       <div class="navbar-right">
-        <!-- Language Switcher -->
+        <!-- Language -->
         <div class="language-switcher">
-          <button
-            class="lang-btn"
-            [class.active]="currentLang === 'en'"
-            (click)="switchLanguage('en')"
-          >
-            EN
-          </button>
-          <button
-            class="lang-btn"
-            [class.active]="currentLang === 'fr'"
-            (click)="switchLanguage('fr')"
-          >
-            FR
-          </button>
+          <button class="lang-btn" [class.active]="currentLang === 'fr'" (click)="switchLanguage('fr')">FR</button>
+          <button class="lang-btn" [class.active]="currentLang === 'en'" (click)="switchLanguage('en')">EN</button>
         </div>
 
-        <!-- Dark Mode Toggle -->
+        <!-- Dark mode -->
         <button class="icon-btn" (click)="toggleDarkMode()">
           <span class="material-icons">{{ darkMode ? 'light_mode' : 'dark_mode' }}</span>
         </button>
 
-        <!-- Notifications -->
+        <!-- Notifications bell -->
         <div class="dropdown">
           <button class="icon-btn" (click)="toggleNotifications()">
             <span class="material-icons">notifications</span>
-            <span class="badge">3</span>
+            <span class="badge" *ngIf="unreadCount > 0">{{ unreadCount > 99 ? '99+' : unreadCount }}</span>
           </button>
-          <div class="dropdown-menu" *ngIf="showNotifications">
-            <div class="dropdown-header">{{ 'nav.notifications' | translate }}</div>
-            <div class="notification-item">
-              <span class="material-icons">info</span>
-              <div class="notification-content">
-                <p>New dashboard available</p>
-                <span class="time">2 hours ago</span>
+
+          <div class="dropdown-menu notif-menu" *ngIf="showNotifications">
+            <div class="notif-header">
+              <span class="dropdown-header-title">{{ 'nav.notifications' | translate }}</span>
+              <button class="mark-all-btn" (click)="markAllRead()" *ngIf="unreadCount > 0">
+                {{ 'notifications.mark_all_read' | translate }}
+              </button>
+            </div>
+
+            <div class="notif-empty" *ngIf="notifications.length === 0">
+              <span class="material-icons">notifications_none</span>
+              <p>{{ 'notifications.empty' | translate }}</p>
+            </div>
+
+            <div *ngFor="let n of notifications"
+                 class="notification-item"
+                 [class.unread]="!n.is_read"
+                 (click)="markRead(n.id, $event)">
+              <div class="notif-icon" [class]="'notif-' + n.type">
+                <span class="material-icons">{{ getNotificationIcon(n.type) }}</span>
               </div>
+              <div class="notification-content">
+                <p class="notif-title">{{ n.title }}</p>
+                <p class="notif-msg" *ngIf="n.message">{{ n.message }}</p>
+                <span class="time">{{ getTimeAgo(n.created_at) }}</span>
+              </div>
+              <div class="unread-dot" *ngIf="!n.is_read"></div>
             </div>
           </div>
         </div>
 
-        <!-- User Menu -->
+        <!-- User menu -->
         <div class="dropdown">
           <button class="user-btn" (click)="toggleUserMenu()">
             <div class="user-avatar">
-              {{ getUserInitials() }}
+              <img *ngIf="currentUser?.profile_image" [src]="currentUser!.profile_image" alt="avatar" />
+              <span *ngIf="!currentUser?.profile_image">{{ getUserInitials() }}</span>
             </div>
-            <span class="user-name" *ngIf="currentUser">
-              {{ getUserDisplayName() }}
-            </span>
+            <span class="user-name" *ngIf="currentUser">{{ getUserDisplayName() }}</span>
             <span class="material-icons">expand_more</span>
           </button>
+
           <div class="dropdown-menu" *ngIf="showUserMenu">
             <div class="dropdown-header">
               <div class="user-info">
                 <div class="user-avatar-large">
-                  {{ getUserInitials() }}
+                  <img *ngIf="currentUser?.profile_image" [src]="currentUser!.profile_image" alt="avatar" />
+                  <span *ngIf="!currentUser?.profile_image">{{ getUserInitials() }}</span>
                 </div>
                 <div class="user-details">
                   <div class="user-name-large">{{ getUserDisplayName() }}</div>
@@ -119,10 +143,10 @@
               <span class="material-icons">account_circle</span>
               {{ 'nav.profile' | translate }}
             </a>
-            <a routerLink="/users" class="dropdown-item" (click)="showUserMenu = false" *ngIf="currentUser?.role?.name === 'Admin'">
-              <span class="material-icons">people</span>
-              {{ 'nav.users' | translate }}
-            </a>
+            <button class="dropdown-item" (click)="openOnboarding()">
+              <span class="material-icons">help_outline</span>
+              {{ 'nav.guide' | translate }}
+            </button>
             <div class="dropdown-divider"></div>
             <button class="dropdown-item logout-item" (click)="logout()">
               <span class="material-icons">logout</span>
@@ -133,11 +157,17 @@
       </div>
     </header>
 
-    <!-- Page Content -->
     <main class="page-content">
       <router-outlet></router-outlet>
     </main>
   </div>
 </div>
 
+<!-- Toasts -->
 <app-toast></app-toast>
+
+<!-- Onboarding stepper -->
+<app-onboarding
+  *ngIf="showOnboarding"
+  (closed)="onOnboardingClosed()">
+</app-onboarding>
